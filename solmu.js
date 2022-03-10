@@ -65,7 +65,8 @@
     document.addEventListener(
       "data-paivitetty",
       function (e) {
-        this.paivitaElementti(document.body);
+        if (document.body)
+          this.paivitaElementti(document.body);
       }.bind(this),
       false
     );
