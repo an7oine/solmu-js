@@ -308,17 +308,37 @@
         return;
       };
       let suodatettuSisalto = window.solmu.suodataData(el, arvo);
-      el.innerHTML = riviaihio.outerHTML;
+      let olemassaolevatRivit = Object.fromEntries(
+        Array.from(el.children)
+        .filter(function (rivi) { return rivi.classList.contains("rivi"); })
+        .map(function (rivi) { return [rivi.dataset.solmu, rivi]; })
+      );
+
+      let viimeisinLisattyRivi = riviaihio;
       for (let [indeksi, rivi] of (arvo ?? []).entries()) {
         if (! suodatettuSisalto.includes(rivi))
           continue;
-        let riviEl = riviaihio.cloneNode(true);
-        riviEl.classList.remove("riviaihio");
-        riviEl.setAttribute(
-          "data-solmu",
-          [el.dataset.solmu, indeksi].join("-")
-        );
-        el.appendChild(riviEl);
+        let rivisolmu = [el.dataset.solmu, indeksi].join("-");
+        let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
+        if (olemassaolevaRiviEl !== undefined) {
+          // Päivitä olemassaoleva rivielementti.
+          solmu.paivitaElementti(olemassaolevaRiviEl);
+          delete olemassaolevatRivit[rivisolmu];
+          viimeisinLisattyRivi = olemassaolevaRiviEl;
+        }
+        else {
+          // Luo uusi rivielementti, lisää se viimeiseksi.
+          let riviEl = riviaihio.cloneNode(true);
+          riviEl.classList.remove("riviaihio");
+          riviEl.classList.add("rivi");
+          riviEl.setAttribute("data-solmu", rivisolmu);
+          viimeisinLisattyRivi.insertAdjacentElement("afterend", riviEl);
+          viimeisinLisattyRivi = riviEl;
+        }
+      }
+      for (let poistuvaRivi of Object.values(olemassaolevatRivit)) {
+        // Poista aiempi rivielementti.
+        poistuvaRivi.remove();
       }
     },
 
