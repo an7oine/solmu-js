@@ -288,7 +288,7 @@
      * Päivitä elementti ja sen lähimmät jälkeläiset.
      */
     paivitaElementti: function (el) {
-      if (el.dataset.solmu)
+      if (el.dataset.solmu !== undefined)
         this._paivitaElementti(el);
       for (let jalkelainen of this.sisemmatSolmut(el))
         this._paivitaElementti(jalkelainen);
@@ -383,6 +383,13 @@
         }
         else
           jalkelainen.setAttribute("data-solmu", solmu.join("-"));
+      }
+      for (let jalkelainen of window.solmu.sisemmatSolmut(
+        el,
+        "[data-solmu]:not([data-suhteellinen-solmu])",
+        ":not([data-suhteellinen-solmu], [data-solmu])"
+      )) {
+        window.solmu.paivitaElementti(jalkelainen);
       }
     },
   });
