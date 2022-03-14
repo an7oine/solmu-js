@@ -354,7 +354,8 @@
      * - muut, viivoin erotetut hierarkiatasot lisätään tähän tulokseen
      */
     suhteellinen: function (el, arvo) {
-      let solmu = el.dataset.solmu.split("-");
+      let solmu = el.dataset.solmu;
+      solmu = solmu? solmu.split("-") : [];
       let vierasavain = el.dataset.suhteellinenVierasavain;
       if (vierasavain !== undefined) {
         for (let [indeksi, rivi] of window.solmu.poimiData(vierasavain).entries()) {
@@ -367,18 +368,19 @@
       for (let jalkelainen of window.solmu.sisemmatSolmut(
         el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu], [data-solmu])"
       )) {
-        if (jalkelainen.dataset.suhteellinenSolmu) {
+        let suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu;
+        if (suhteellinenSolmu) {
           let _solmu = Array.from(solmu);
-          let _suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu.split("-");
-          let _viimeinenSuhteellinenAlkio = _suhteellinenSolmu.pop();
-          while (_solmu.length > 0 && _suhteellinenSolmu[0] === "") {
+          while (suhteellinenSolmu.startsWith("-")) {
+            if (! _solmu.length)
+              // Huomaa, että mikäli `---...` viittaa ulomman solmun
+              // ulkopuolelle, sisemmälle elementille tulee `-`-alkuinen solmu.
+              break;
             _solmu.pop();
-            _suhteellinenSolmu.shift();
+            suhteellinenSolmu = suhteellinenSolmu.substring(1);
           }
-          _solmu = _solmu.concat(_suhteellinenSolmu);
-          if (_viimeinenSuhteellinenAlkio)
-            // Viimeistä tyhjää alkiota ei huomioida.
-            _solmu.push(_viimeinenSuhteellinenAlkio);
+          if (suhteellinenSolmu)
+            _solmu = _solmu.concat(suhteellinenSolmu.split("-"));
           jalkelainen.setAttribute("data-solmu", _solmu.join("-"));
         }
         else
