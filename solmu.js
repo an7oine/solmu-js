@@ -133,7 +133,7 @@
         `:scope >${ei_q}`
       )) {
         tasmaavat = tasmaavat.concat(
-          this.sisemmatSolmut(jalkelainen, q)
+          this.sisemmatSolmut(jalkelainen, q, ei_q)
         );
       }
       return tasmaavat;
@@ -366,7 +366,7 @@
         }
       }
       for (let jalkelainen of window.solmu.sisemmatSolmut(
-        el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu], [data-solmu])"
+        el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu]):not([data-solmu])"
       )) {
         let suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu;
         if (suhteellinenSolmu) {
@@ -389,7 +389,7 @@
       for (let jalkelainen of window.solmu.sisemmatSolmut(
         el,
         "[data-solmu]:not([data-suhteellinen-solmu])",
-        ":not([data-suhteellinen-solmu], [data-solmu])"
+        ":not([data-suhteellinen-solmu]):not([data-solmu])"
       )) {
         window.solmu.paivitaElementti(jalkelainen);
       }
