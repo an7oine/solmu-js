@@ -329,12 +329,19 @@
       else
         arvo = Object.entries(arvo ?? {});
 
+      // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
+      // sen kautta.
+      // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
+      let vierasavain = el.dataset.solmuVierasavain;
+
       for (let [indeksi, rivi] of arvo) {
         // Huomaa, että indeksi voi olla (olion tapauksessa)
         // myös merkkijonomuotoinen sanakirja-avain.
         if (! suodatettuSisalto.includes(rivi))
           continue;
-        let rivisolmu = [el.dataset.solmu, indeksi].join("-");
+        let rivisolmu = (
+          vierasavain && rivi? [vierasavain, rivi.id] : [el.dataset.solmu, indeksi]
+        ).join("-");
         let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
         if (olemassaolevaRiviEl !== undefined) {
           // Päivitä olemassaoleva rivielementti.
@@ -361,9 +368,9 @@
     /*
      * Suhteellinen, ulomman solmun viittauksesta riippuva sisältö.
      *
-     * Elementin sisältämät [data-riippuva-solmu]-jälkeläiset käydään
+     * Elementin sisältämät [data-suhteellinen-solmu]-jälkeläiset käydään
      * läpi ja alkuperäisen elementin solmu lisätään niiden alkuun:
-     * - mikäli `[data-riippuva-solmu]` on tyhjä, käytetään alkuperäistä
+     * - mikäli `[data-suhteellinen-solmu]` on tyhjä, käytetään alkuperäistä
      *   solmua sellaisenaan
      * - mikäli se alkaa viivoilla, kutakin viivaa kohti poistetaan
      *   yksi alkuperäisen solmun hierarkiataso
@@ -372,14 +379,13 @@
     suhteellinen: function (el, arvo) {
       let solmu = el.dataset.solmu;
       solmu = solmu? solmu.split("-") : [];
-      let vierasavain = el.dataset.suhteellinenVierasavain;
-      if (vierasavain !== undefined) {
-        for (let [indeksi, rivi] of window.solmu.poimiData(vierasavain).entries()) {
-          if (rivi.id == arvo) {
-            solmu = vierasavain.split("-").concat([indeksi]);
-            break;
-          }
-        }
+
+      // Mikäli vierasavain on määritetty, haetaan suhteellinen data
+      // sen kautta.
+      // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
+      let vierasavain = el.dataset.solmuVierasavain;
+      if (arvo && vierasavain !== undefined) {
+        solmu = vierasavain.split("-").concat([arvo]);
       }
       for (let jalkelainen of window.solmu.sisemmatSolmut(
         el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu]):not([data-solmu])"
