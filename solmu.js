@@ -258,15 +258,18 @@
      * Suodata annetun taulukon rivit.
      */
     suodataData: function (el, data) {
-      if (
-        Array.isArray(data)
-        && el.dataset.solmuSuodatus
-        && this.suodatus[el.dataset.solmuSuodatus]
-      )
-        return data.filter(
-          this.suodatus[el.dataset.solmuSuodatus].bind(this.suodatus)
-        );
-      return data;
+      if (! this.suodatus[el.dataset.solmuSuodatus])
+        return data;
+      let suodatus = this.suodatus[
+        el.dataset.solmuSuodatus
+      ].bind(this.suodatus);
+      if (Array.isArray(data))
+        return data.filter(suodatus);
+      return Object.fromEntries(
+        Object.entries(data).filter(function ([avain, arvo]) {
+          return suodatus(arvo, avain);
+        })
+      );
     },
 
     /*
@@ -307,7 +310,13 @@
         console.log(`Elementin ${el} sisältä ei löytynyt riviaihiota.`);
         return;
       };
+      if (arvo === undefined) {
+        console.log(`Elementti ${el}: arvo puuttuu.`);
+        return;
+      }
       let suodatettuSisalto = window.solmu.suodataData(el, arvo);
+      if (! Array.isArray(suodatettuSisalto))
+        suodatettuSisalto = Object.values(suodatettuSisalto);
       let olemassaolevatRivit = Object.fromEntries(
         Array.from(el.children)
         .filter(function (rivi) { return rivi.classList.contains("rivi"); })
@@ -315,7 +324,14 @@
       );
 
       let viimeisinLisattyRivi = riviaihio;
-      for (let [indeksi, rivi] of (arvo ?? []).entries()) {
+      if (Array.isArray(arvo))
+        arvo = arvo.entries();
+      else
+        arvo = Object.entries(arvo ?? {});
+
+      for (let [indeksi, rivi] of arvo) {
+        // Huomaa, että indeksi voi olla (olion tapauksessa)
+        // myös merkkijonomuotoinen sanakirja-avain.
         if (! suodatettuSisalto.includes(rivi))
           continue;
         let rivisolmu = [el.dataset.solmu, indeksi].join("-");
