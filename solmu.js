@@ -12,8 +12,7 @@
         /*
          * Kuuntele kaikkia DOM-muutoksia ja reagoi niihin seuraavasti:
          *
-         * - uusien [data-solmu]-elementtien sisältö päivitetään
-         *   ja asetetaan kuuntelija `data-paivitetty`-tapahtumalle
+         * - uusien [data-solmu]-elementtien sisältö päivitetään heti;
          *
          * - olemassaolevat elementit päivitetään aina, kun niiden
          *   [data-solmu*]-määreitä muutetaan.
@@ -24,7 +23,6 @@
               for (let solmu of muutos.addedNodes)
                 if (solmu.nodeType == Node.ELEMENT_NODE) {
                   this.paivitaElementti(solmu);
-                  this._paivitaAutomaattisesti(solmu);
                 }
             }
             else if (muutos.type === 'attributes') {
@@ -33,7 +31,6 @@
                 && muutos.target.matches("[data-solmu]")
               ) {
                 this._paivitaElementti(muutos.target);
-                this._paivitaAutomaattisesti(muutos.target);
               }
             }
           }
@@ -46,13 +43,9 @@
 
         /*
          * Päivitä kaikki DOM:ssä jo olevat solmut.
-         *
-         * Aseta niille myös automaattinen päivitys `data-paivitetty`-sanoman
-         * yhteydessä.
          */
         for (let olemassaolevaSolmu of this.sisemmatSolmut(document)) {
           this._paivitaElementti(olemassaolevaSolmu);
-          this._paivitaAutomaattisesti(olemassaolevaSolmu);
         }
       }.bind(this),
       false
@@ -92,29 +85,6 @@
     esitys: {},
     tulkinta: {},
     suodatus: {},
-
-    /*
-     * Lisää tarvittaessa kuuntelija, joka päivittää elementin sisällön
-     * automaattisesti, kun tämä elementti vastaanottaa
-     * `data-paivitetty`-sanoman.
-     */
-    _automaattisestiPaivittyvatSolmut: [],
-    _paivitaAutomaattisesti: function (el) {
-      if (! this._automaattisestiPaivittyvatSolmut.includes(el)) {
-        el.addEventListener(
-          "data-paivitetty",
-          function (e) {
-            // Oletetaan, että kaikkia `el`:n jälkeläisiä päivitetään
-            // myös automaattisesti.
-            this._paivitaElementti(e.target);
-          }.bind(this),
-          false
-        );
-        this._automaattisestiPaivittyvatSolmut.push(el);
-      }
-      for (let solmu of el.querySelectorAll("[data-solmu]"))
-        this._paivitaAutomaattisesti(solmu);
-    },
 
     /*
      * Poimi elementin sisältämät, hakuun (oletuksena [data-solmu])
