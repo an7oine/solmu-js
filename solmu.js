@@ -229,17 +229,10 @@
      */
     suodataData: function (el, data) {
       if (! this.suodatus[el.dataset.solmuSuodatus])
-        return data;
-      let suodatus = this.suodatus[
+        return true;
+      return this.suodatus[
         el.dataset.solmuSuodatus
-      ].bind(this.suodatus);
-      if (Array.isArray(data))
-        return data.filter(suodatus);
-      return Object.fromEntries(
-        Object.entries(data).filter(function ([avain, arvo]) {
-          return suodatus(arvo, avain);
-        })
-      );
+      ].bind(this.suodatus)(data);
     },
 
     /*
@@ -284,9 +277,6 @@
         console.log(`Elementti ${el}: arvo puuttuu.`);
         return;
       }
-      let suodatettuSisalto = window.solmu.suodataData(el, arvo);
-      if (! Array.isArray(suodatettuSisalto))
-        suodatettuSisalto = Object.values(suodatettuSisalto);
       let olemassaolevatRivit = Object.fromEntries(
         Array.from(el.children)
         .filter(function (rivi) { return rivi.classList.contains("rivi"); })
@@ -307,11 +297,21 @@
       for (let [indeksi, rivi] of arvo) {
         // Huomaa, että indeksi voi olla (olion tapauksessa)
         // myös merkkijonomuotoinen sanakirja-avain.
-        if (! suodatettuSisalto.includes(rivi))
+        let rivisolmu = [el.dataset.solmu, indeksi];
+        if (vierasavain && ! rivi) {
+          console.log("Vierasavaimella ei löydy tietuetta:", el.dataset.solmu, arvo);
           continue;
-        let rivisolmu = (
-          vierasavain && rivi? [vierasavain, rivi.id] : [el.dataset.solmu, indeksi]
-        ).join("-");
+        }
+        else if (vierasavain) {
+          rivisolmu = [vierasavain, rivi.id];
+          rivi = window.solmu.poimiData(rivisolmu);
+        }
+
+        if (! window.solmu.suodataData(el, rivi))
+          continue;
+
+        rivisolmu = rivisolmu.join("-");
+
         let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
         if (olemassaolevaRiviEl !== undefined) {
           // Päivitä olemassaoleva rivielementti.
