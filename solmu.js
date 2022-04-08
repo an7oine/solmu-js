@@ -184,20 +184,20 @@
      * asetetaan se elementin sisällöksi.
      */
     esitaData: function (el, data) {
-      let arvo = undefined;
-      if (el.dataset.solmuEsitys === undefined)
-        arvo = data;
-      else if (el.dataset.solmuEsitys) {
+      let arvo = data;
+      if (el.dataset.solmuEsitys) {
         for (let esitys of el.dataset.solmuEsitys.split(", ")) {
           if (this.esitys[esitys])
-            arvo = this.esitys[esitys].bind(this.esitys)(el, data) ?? arvo;
+            arvo = this.esitys[esitys].bind(this.esitys)(el, arvo);
           else if (esitys) {
-            console.log("Esitys puuttuu", esitys);
+            console.log(`${el.dataset.solmu}: esitys ${esitys} puuttuu.`);
             return;
           }
         }
       }
       if (arvo === undefined)
+        return;
+      else if (! ["string", "number"].includes(typeof arvo))
         return;
       let sisalto = el.dataset.solmuSisalto;
       if (sisalto === undefined) {
@@ -220,7 +220,7 @@
           el.dataset.solmuTulkinta
         ].bind(this.tulkinta)(el, data);
       else if (el.dataset.solmuTulkinta)
-        console.log("Tulkinta puuttuu", el.dataset.solmuTulkinta);
+        console.log(`${el.dataset.solmu}: tulkinta ${el.dataset.solmuTulkinta} puuttuu.`);
       return data;
     },
 
@@ -270,11 +270,11 @@
     rivitetty: function (el, arvo) {
       let riviaihio = solmu.sisemmatSolmut(el, ".riviaihio")[0];
       if (! riviaihio) {
-        console.log(`Elementin ${el} sisältä ei löytynyt riviaihiota.`);
+        console.log(`${el.dataset.solmu}: riviaihiota ei löydy.`);
         return;
       };
       if (arvo === undefined) {
-        console.log(`Elementti ${el}: arvo puuttuu.`);
+        console.log(`${el.dataset.solmu}: arvo puuttuu.`);
         return;
       }
       let olemassaolevatRivit = Object.fromEntries(
@@ -297,20 +297,18 @@
       for (let [indeksi, rivi] of arvo) {
         // Huomaa, että indeksi voi olla (olion tapauksessa)
         // myös merkkijonomuotoinen sanakirja-avain.
-        let rivisolmu = [el.dataset.solmu, indeksi];
+        let rivisolmu = [el.dataset.solmu, indeksi].join("-");
         if (vierasavain && ! rivi) {
-          console.log("Vierasavaimella ei löydy tietuetta:", el.dataset.solmu, arvo);
+          console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
           continue;
         }
         else if (vierasavain) {
-          rivisolmu = [vierasavain, rivi.id];
+          rivisolmu = [vierasavain, rivi.id].join("-");
           rivi = window.solmu.poimiData(rivisolmu);
         }
 
         if (! window.solmu.suodataData(el, rivi))
           continue;
-
-        rivisolmu = rivisolmu.join("-");
 
         let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
         if (olemassaolevaRiviEl !== undefined) {
@@ -333,6 +331,7 @@
         // Poista aiempi rivielementti.
         poistuvaRivi.remove();
       }
+      return arvo;
     },
 
     /*
@@ -354,8 +353,11 @@
       // sen kautta.
       // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
       let vierasavain = el.dataset.solmuVierasavain;
-      if (arvo && vierasavain !== undefined) {
+      if (vierasavain !== undefined) {
+        if (! arvo)
+          return;
         solmu = vierasavain.split("-").concat([arvo]);
+        arvo = window.solmu.poimiData(solmu.join("-"));
       }
       for (let jalkelainen of window.solmu.sisemmatSolmut(
         el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu]):not([data-solmu])"
@@ -385,6 +387,7 @@
       )) {
         window.solmu.paivitaElementti(jalkelainen);
       }
+      return arvo;
     },
   });
 
