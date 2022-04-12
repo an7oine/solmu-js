@@ -197,16 +197,21 @@
       }
       if (arvo === undefined)
         return;
-      else if (! ["string", "number"].includes(typeof arvo))
-        return;
       let sisalto = el.dataset.solmuSisalto;
       if (sisalto === undefined) {
-        sisalto = "textContent";
         for (const [tyyppi, _sisalto] of this.ElementinSisalto)
           if (el.matches(tyyppi)) {
             sisalto = _sisalto;
             break;
           }
+        if (sisalto)
+          ;
+        else if (! [
+          "string", "number"
+        ].includes(typeof arvo))
+          return;
+        else
+          sisalto = "textContent";
       }
       el[sisalto] = arvo;
     },
