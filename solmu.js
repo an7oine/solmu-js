@@ -289,20 +289,18 @@
       );
 
       let viimeisinLisattyRivi = riviaihio;
-      if (Array.isArray(arvo))
-        arvo = arvo.entries();
-      else
-        arvo = Object.entries(arvo ?? {});
+      if (! Array.isArray(arvo))
+        arvo = Object.values(arvo ?? {});
 
       // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
       // sen kautta.
       // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
       let vierasavain = el.dataset.solmuVierasavain;
 
-      for (let [indeksi, rivi] of arvo) {
-        // Huomaa, että indeksi voi olla (olion tapauksessa)
-        // myös merkkijonomuotoinen sanakirja-avain.
-        let rivisolmu = [el.dataset.solmu, indeksi].join("-");
+      let rivisolmut = [];
+
+      for (let rivi of Array.isArray(arvo)? arvo : Object.values(arvo ?? {})) {
+        let rivisolmu = [el.dataset.solmu, rivi.id].join("-");
         if (vierasavain && ! rivi) {
           console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
           continue;
@@ -314,6 +312,12 @@
 
         if (! window.solmu.suodataData(el, rivi))
           continue;
+
+        if (rivisolmut.includes(rivisolmu)) {
+          console.log(`Rivi ${rivisolmu} on kahdesti aineistossa!`);
+          continue;
+        }
+        rivisolmut.push(rivisolmu);
 
         let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
         if (olemassaolevaRiviEl !== undefined) {
