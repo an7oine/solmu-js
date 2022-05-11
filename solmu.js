@@ -317,14 +317,18 @@
       let rivisolmut = [];
 
       for (let rivi of Array.isArray(arvo)? arvo : Object.values(arvo ?? {})) {
-        let rivisolmu = [el.dataset.solmu, rivi.id].join("-");
-        if (vierasavain && ! rivi) {
-          console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
+        if (! rivi) {
+          console.log(`${el.dataset.solmu}: rivi puuttuu.`);
           continue;
         }
-        else if (vierasavain) {
+        let rivisolmu = [el.dataset.solmu, rivi.id].join("-");
+        if (vierasavain) {
           rivisolmu = [vierasavain, rivi.id].join("-");
           rivi = window.solmu.poimiData(rivisolmu);
+          if (! rivi) {
+            console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
+            continue;
+          }
         }
 
         if (! window.solmu.suodataData(el, rivi))
