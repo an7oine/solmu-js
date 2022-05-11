@@ -367,6 +367,8 @@
     /*
      * Suhteellinen, ulomman solmun viittauksesta riippuva sisältö.
      *
+     * Mikäli elementin solmu alkaa "-", ohitetaan.
+     *
      * Elementin sisältämät [data-suhteellinen-solmu]-jälkeläiset käydään
      * läpi ja alkuperäisen elementin solmu lisätään niiden alkuun:
      * - mikäli `[data-suhteellinen-solmu]` on tyhjä, käytetään alkuperäistä
@@ -377,39 +379,66 @@
      */
     suhteellinen: function (el, arvo) {
       let solmu = el.dataset.solmu;
-      solmu = solmu? solmu.split("-") : [];
+      if (solmu.startsWith("-"))
+        solmu = undefined;
+      else if (solmu)
+        solmu = solmu.split("-");
+      else
+        solmu = [];
 
       // Mikäli vierasavain on määritetty, haetaan suhteellinen data
       // sen kautta.
       // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
       let vierasavain = el.dataset.solmuVierasavain;
-      if (vierasavain !== undefined) {
+      if (solmu !== undefined && vierasavain !== undefined) {
         if (! arvo)
           return;
         solmu = vierasavain.split("-").concat([arvo]);
         arvo = window.solmu.poimiData(solmu.join("-"));
       }
-      for (let jalkelainen of window.solmu.sisemmatSolmut(
-        el, "[data-suhteellinen-solmu]", ":not([data-suhteellinen-solmu]):not([data-solmu])"
-      )) {
-        let suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu;
-        if (suhteellinenSolmu) {
-          let _solmu = Array.from(solmu);
-          while (suhteellinenSolmu.startsWith("-")) {
-            if (! _solmu.length)
-              // Huomaa, että mikäli `---...` viittaa ulomman solmun
-              // ulkopuolelle, sisemmälle elementille tulee `-`-alkuinen solmu.
-              break;
-            _solmu.pop();
-            suhteellinenSolmu = suhteellinenSolmu.substring(1);
+
+      // Mikäli ulomman elementin solmu on kelvollinen
+      // (ei "-"-alkuinen),
+      // käydään läpi kaikki sen välittömät
+      // [data-suhteellinen-solmu]-jälkeläiset.
+      // Ohitetaan mahdolliset [data-solmu]-jälkeläiset.
+      if (solmu !== undefined) {
+        for (let jalkelainen of window.solmu.sisemmatSolmut(
+          el,
+          "[data-suhteellinen-solmu]",
+          ":not([data-suhteellinen-solmu]):not([data-solmu])"
+        )) {
+          let suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu;
+          if (suhteellinenSolmu) {
+            let _solmu = Array.from(solmu);
+            // Kuoritaan ulomman elementin viittaamia,
+            // sisimpiä solmuja tarvittaessa pois, yksi
+            // kutakin alkavaa "-"-merkkiä kohti.
+            while (suhteellinenSolmu.startsWith("-")) {
+              if (! _solmu.length)
+                // Huomaa, että mikäli `---...` viittaa ulomman solmun
+                // ulkopuolelle, sisemmälle elementille tulee `-`-alkuinen solmu.
+                break;
+              _solmu.pop();
+              suhteellinenSolmu = suhteellinenSolmu.substring(1);
+            }
+            // Lisätään sisemmän elementin viittama suhteellinen
+            // polku tuloksena saatuun solmuun.
+            if (suhteellinenSolmu)
+              _solmu = _solmu.concat(suhteellinenSolmu.split("-"));
+            // Asetetaan tuloksena saatu solmu sisempään.
+            jalkelainen.setAttribute("data-solmu", _solmu.join("-"));
           }
-          if (suhteellinenSolmu)
-            _solmu = _solmu.concat(suhteellinenSolmu.split("-"));
-          jalkelainen.setAttribute("data-solmu", _solmu.join("-"));
+          else
+            // Mikäli [data-suhteellinen-solmu=""],
+            // asetetaan ulomman elementin solmu sellaisenaan.
+            jalkelainen.setAttribute("data-solmu", solmu.join("-"));
         }
-        else
-          jalkelainen.setAttribute("data-solmu", solmu.join("-"));
       }
+
+      // Käydään läpi kaikki välittömät
+      // [data-solmu]-jälkeläiset, poislukien yllä läpikäydyt
+      // [data-suhteellinen-solmu][data-solmu]-jälkeläiset.
       for (let jalkelainen of window.solmu.sisemmatSolmut(
         el,
         "[data-solmu]:not([data-suhteellinen-solmu])",
