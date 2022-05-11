@@ -187,8 +187,16 @@
       let arvo = data;
       if (el.dataset.solmuEsitys) {
         for (let esitys of el.dataset.solmuEsitys.split(", ")) {
-          if (this.esitys[esitys])
-            arvo = this.esitys[esitys].bind(this.esitys)(el, arvo);
+          if (this.esitys[esitys]) {
+            try {
+              arvo = this.esitys[esitys].bind(this.esitys)(el, arvo);
+            }
+            catch (e) {
+              console.log(`${el.dataset.solmu}: esitys ${esitys} on virheellinen.`);
+              console.log(e.stack);
+              return;
+            }
+          }
           else if (esitys) {
             console.log(`${el.dataset.solmu}: esitys ${esitys} puuttuu.`);
             return;
