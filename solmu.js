@@ -241,11 +241,20 @@
      * Suodata annetun taulukon rivit.
      */
     suodataData: function (el, data) {
-      if (! this.suodatus[el.dataset.solmuSuodatus])
-        return true;
-      return this.suodatus[
-        el.dataset.solmuSuodatus
-      ].bind(this.suodatus)(data);
+      let arvo = data;
+      if (el.dataset.solmuSuodatus) {
+        for (let suodatus of el.dataset.solmuSuodatus.split(", ")) {
+          if (this.suodatus[suodatus]) {
+            if (! this.suodatus[suodatus].bind(this.suodatus)(data))
+              return false;
+          }
+          else if (suodatus) {
+            console.log(`${el.dataset.solmu}: suodatus ${suodatus} puuttuu.`);
+            return true;
+          }
+        }
+      }
+      return true;
     },
 
     /*
