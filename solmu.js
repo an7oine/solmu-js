@@ -193,7 +193,7 @@
             }
             catch (e) {
               console.log(`${el.dataset.solmu}: esitys ${esitys} on virheellinen.`);
-              console.log(e.stack);
+              console.log(e);
               return;
             }
           }
@@ -245,7 +245,7 @@
       if (el.dataset.solmuSuodatus) {
         for (let suodatus of el.dataset.solmuSuodatus.split(", ")) {
           if (this.suodatus[suodatus]) {
-            if (! this.suodatus[suodatus].bind(this.suodatus)(data))
+            if (! this.suodatus[suodatus].bind(this.suodatus)(data, el))
               return false;
           }
           else if (suodatus) {
@@ -282,6 +282,12 @@
         this._paivitaElementti(jalkelainen);
     },
   });
+
+  /*
+   *
+   * VAKIOESITYKSET.
+   *
+   */
 
   Object.assign(Solmu.prototype.esitys, {
     /*
