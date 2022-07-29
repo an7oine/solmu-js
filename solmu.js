@@ -218,6 +218,8 @@
           "string", "number"
         ].includes(typeof arvo))
           return;
+        else if (el.childElementCount)
+          return
         else
           sisalto = "textContent";
       }
