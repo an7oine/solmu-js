@@ -154,10 +154,11 @@
      *
      * {sanakirja: {avain: 42}}
      */
-    asetaData: function (avain, arvo) {
-      let data = document.data;
-      let avaimet = avain.split("-");
-      for (let _avain of avaimet.slice(0, -1)) {
+    asetaData: function (avain, arvo, data) {
+      data = data ?? document.data;
+      let avaimet = avain.split("-"), _avain, _edellinenData = data;
+      for (_avain of avaimet.slice(0, -1)) {
+        _edellinenData = data;
         if (!_avain || ! data)
           return;
         else if (Array.isArray(data)) {
@@ -171,9 +172,16 @@
         else
           data = data[_avain] ?? (data[_avain] = {});
       }
-      let _avain = avaimet[avaimet.length - 1];
-      if (data && _avain)
-        data[_avain] = arvo;
+      if (avaimet[avaimet.length - 1] === "[]") {
+        if (! Array.isArray(data))
+          data = _edellinenData[_avain] = [];
+        data.push(arvo);
+      }
+      else {
+        let _avain = avaimet[avaimet.length - 1];
+        if (data && _avain)
+          data[_avain] = arvo;
+      }
     },
 
     /*
@@ -219,7 +227,7 @@
         ].includes(typeof arvo))
           return;
         else if (el.childElementCount)
-          return
+          return;
         else
           sisalto = "textContent";
       }
