@@ -152,16 +152,28 @@
      * (joka luodaan tarvittaessa) avaimeksi,
      * so. `sanakirja-avain` = 42 tuottaa tuloksena:
      *
+     * Avaimen osana [] viittaa uuteen alkioon ulommassa taulukossa,
+     * joka luodaan tarvittaessa. Huomaa, että kukin ajo samalla
+     * avaimella luo oman, uuden alkionsa samaan taulukkoon.
+     *
      * {sanakirja: {avain: 42}}
      */
     asetaData: function (avain, arvo, data) {
       data = data ?? document.data;
-      let avaimet = avain.split("-"), _avain, _edellinenData = data;
+      let avaimet = avain.split("-"), _avain;
+      let _edellinenData = data, _edellinenAvain;
       for (_avain of avaimet.slice(0, -1)) {
-        _edellinenData = data;
         if (!_avain || ! data)
           return;
+        else if (_avain === "[]") {
+          if (! Array.isArray(data))
+            data = _edellinenData[_edellinenAvain] = [];
+          (_edellinenData = data).push(data = {});
+          _edellinenAvain = 0;
+        }
         else if (Array.isArray(data)) {
+          _edellinenData = data;
+          _edellinenAvain = _avain;
           if (! isNaN(_avain))
             data = data[_avain];
           else
@@ -169,12 +181,15 @@
               return alkio? alkio[_avain] : undefined;
             });
         }
-        else
+        else {
+          _edellinenData = data;
+          _edellinenAvain = _avain;
           data = data[_avain] ?? (data[_avain] = {});
+        }
       }
       if (avaimet[avaimet.length - 1] === "[]") {
         if (! Array.isArray(data))
-          data = _edellinenData[_avain] = [];
+          data = _edellinenData[_edellinenAvain] = [];
         data.push(arvo);
       }
       else {
