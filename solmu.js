@@ -139,6 +139,8 @@
               return alkio? alkio[_avain] : undefined;
             });
         }
+        else if (_avain === "*")
+          data = Object.values(data);
         else
           data = data[_avain];
       }
