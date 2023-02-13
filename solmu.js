@@ -375,9 +375,11 @@
 
         let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
         if (olemassaolevaRiviEl !== undefined) {
-          // Päivitä olemassaoleva rivielementti.
+          // Päivitä olemassaoleva rivielementti;
+          // siirrä se viimeiseksi.
           solmu.paivitaElementti(olemassaolevaRiviEl);
           delete olemassaolevatRivit[rivisolmu];
+          viimeisinLisattyRivi.insertAdjacentElement("afterend", olemassaolevaRiviEl);
           viimeisinLisattyRivi = olemassaolevaRiviEl;
         }
         else {
