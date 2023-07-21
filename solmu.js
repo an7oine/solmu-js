@@ -78,6 +78,9 @@
       ["input[type=date], input[type=time]", "valueAsDate"],
       ["input, select, option", "value"],
     ],
+    ElementinTulkinta: [
+      ["input[type=checkbox]", "rastiRuudussa"],
+    ],
 
     /*
      * Datan esitys ja tekstiesityksen tulkinta.
@@ -255,12 +258,18 @@
      * Tulkitse tekstiesitys loogisena arvona.
      */
     tulkitseData: function (el, data) {
-      if (this.tulkinta[el.dataset.solmuTulkinta])
-        return this.tulkinta[
-          el.dataset.solmuTulkinta
-        ].bind(this.tulkinta)(el, data);
-      else if (el.dataset.solmuTulkinta)
-        console.log(`${el.dataset.solmu}: tulkinta ${el.dataset.solmuTulkinta} puuttuu.`);
+      let tulkinta = el.dataset.solmuTulkinta;
+      if (! tulkinta) {
+        for (const [tyyppi, _tulkinta] of window.solmu.ElementinTulkinta)
+          if (el.matches(tyyppi)) {
+            tulkinta = _tulkinta;
+            break;
+          }
+      }
+      if (tulkinta && this.tulkinta[tulkinta])
+        return this.tulkinta[tulkinta].bind(this.tulkinta)(el, data);
+      else if (tulkinta)
+        console.log(`${el.dataset.solmu}: tulkinta ${tulkinta} puuttuu.`);
       return data;
     },
 
@@ -515,6 +524,15 @@
       }
       return arvo;
     },
+  });
+
+  Object.assign(Solmu.prototype.tulkinta, {
+    /*
+     * Tulkitse `input[type=checkbox]`-tyyppinen syöte true/false-muodossa.
+     */
+    rastiRuudussa: function (el, arvo) {
+      return el.checked;
+    }
   });
 
   window.solmu = new Solmu();
