@@ -203,52 +203,52 @@
 
     /*
      * Muodosta tekstiesitys datalle elementtikohtaisen
-     * esitysmuotofunktion tai -funktioiden perusteella.
+     * esitysmuotofunktio(ide)n perusteella.
      *
-     * Mikäli (viimeinen) kutsuttu funktio palauttaa arvon,
-     * asetetaan se elementin sisällöksi.
+     * Oletuksena käytetään funktiota:
+     * - `suhteellinen` silloin, kun kyse on isäntäelementistä;
+     * - `sisalto` muuten.
+     *
+     * Kutsutaan lopuksi `sisalto`-esitysfunktiota, ellei se sisälly
+     * elementille määritettyyn esitykseen ja:
+     * - elementillä on [data-solmu-sisalto] tai
+     * - elementti sisältyy this.ElementinSisalto-luetteloon tai
+     * - elementti ei sisällä toisia elementtejä.
      */
     esitaData: function (el, data) {
       let arvo = data;
-      if (el.dataset.solmuEsitys) {
-        for (let esitys of el.dataset.solmuEsitys.split(", ")) {
-          if (this.esitys[esitys]) {
-            try {
-              arvo = this.esitys[esitys].bind(this.esitys)(el, arvo);
-            }
-            catch (e) {
-              console.log(`${el.dataset.solmu}: esitys ${esitys} on virheellinen.`);
-              console.log(e);
-              return;
-            }
+      let esitykset;
+      if (el.dataset.solmuEsitys)
+        esitykset = el.dataset.solmuEsitys.split(", ");
+      else if (el.childElementCount)
+        esitykset = ["suhteellinen"];
+      else
+        esitykset = ["sisalto"];
+      for (let esitys of esitykset) {
+        if (this.esitys[esitys]) {
+          try {
+            arvo = this.esitys[esitys].bind(this.esitys)(el, arvo);
           }
-          else if (esitys) {
-            console.log(`${el.dataset.solmu}: esitys ${esitys} puuttuu.`);
+          catch (e) {
+            console.log(`${el.dataset.solmu}: esitys ${esitys} on virheellinen.`);
             return;
           }
         }
-      }
-      if (arvo === undefined)
-        return;
-      let sisalto = el.dataset.solmuSisalto;
-      if (sisalto === undefined) {
-        for (const [tyyppi, _sisalto] of this.ElementinSisalto)
-          if (el.matches(tyyppi)) {
-            sisalto = _sisalto;
-            break;
-          }
-        if (sisalto)
-          ;
-        else if (! [
-          "string", "number"
-        ].includes(typeof arvo))
+        else if (esitys) {
+          console.log(`${el.dataset.solmu}: esitys ${esitys} puuttuu.`);
           return;
-        else if (el.childElementCount)
-          return;
-        else
-          sisalto = "textContent";
+        }
       }
-      el[sisalto] = arvo;
+      if (esitykset.includes("sisalto"))
+        ;
+      else if (
+        el.dataset.solmuSisalto
+        || this.ElementinSisalto.filter(function ([tyyppi, _sisalto]) {
+          return el.matches(tyyppi);
+        }).length > 0
+        || ! el.childElementCount
+      )
+        this.esitys.sisalto(el, arvo);
     },
 
     /*
@@ -317,6 +317,38 @@
    */
 
   Object.assign(Solmu.prototype.esitys, {
+
+    /*
+     * Aseta elementin sisältö.
+     */
+    sisalto: function (el, arvo) {
+      let sisalto = el.dataset.solmuSisalto;
+      if (sisalto === undefined) {
+        for (const [tyyppi, _sisalto] of window.solmu.ElementinSisalto)
+          if (el.matches(tyyppi)) {
+            sisalto = _sisalto;
+            break;
+          }
+        if (sisalto)
+          ;
+        else if (! [
+          "string", "number", "undefined"
+        ].includes(typeof arvo))
+          return;
+        else if (el.childElementCount)
+          return;
+        else
+          sisalto = "textContent";
+      }
+      if (sisalto.startsWith("on"))
+        el.setAttribute(sisalto, arvo)
+      else {
+        if (sisalto !== "valueAsDate")
+          arvo = arvo ?? "";
+        el[sisalto] = arvo;
+      }
+    },
+
     /*
      * Taulukkomuotoinen sisältö. Elementin sisältämää `.riviaihio`-elementtiä
      * monistetaan kutakin syöteriviä kohti. Näin luodun elementin solmuksi
