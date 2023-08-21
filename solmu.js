@@ -312,7 +312,7 @@
      * Päivitä elementti ja sen lähimmät jälkeläiset.
      */
     paivitaElementti: function (el) {
-      if (el.dataset.solmu !== undefined)
+      if (el.dataset?.solmu !== undefined)
         this._paivitaElementti(el);
       for (let jalkelainen of this.sisemmatSolmut(el))
         this._paivitaElementti(jalkelainen);
