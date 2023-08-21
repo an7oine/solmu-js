@@ -259,7 +259,7 @@
      */
     tulkitseData: function (el, data) {
       let tulkinta = el.dataset.solmuTulkinta;
-      if (! tulkinta) {
+      if (tulkinta === undefined) {
         for (const [tyyppi, _tulkinta] of window.solmu.ElementinTulkinta)
           if (el.matches(tyyppi)) {
             tulkinta = _tulkinta;
