@@ -35,7 +35,7 @@
             }
           }
         }.bind(this));
-        this._muutostenTarkkailija.observe(document.body, {
+        this._muutostenTarkkailija.observe(document, {
           attributes: true,
           childList: true,
           subtree: true
@@ -58,8 +58,8 @@
     document.addEventListener(
       "data-paivitetty",
       function (e) {
-        if (document.body)
-          this.paivitaElementti(document.body);
+        if (document)
+          this.paivitaElementti(document);
       }.bind(this),
       false
     );
