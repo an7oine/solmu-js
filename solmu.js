@@ -351,7 +351,7 @@
       }
       if (sisalto.startsWith("on"))
         el.setAttribute(sisalto, arvo)
-      else {
+      else if (sisalto) {
         if (sisalto !== "valueAsDate")
           arvo = arvo ?? "";
         el[sisalto] = arvo;
