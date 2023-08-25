@@ -54,11 +54,25 @@
     /*
      * Päivitä kaikki solmut aina, kun dokumentti vastaanottaa
      * `data-paivitetty`-sanoman.
+     *
+     * Mikäli kyse on sanomasta muotoa
+     * `new CustomEvent("data-paivitetty", {detail: ["abc", "d-e", ...]})`,
+     * päivitetään kuitenkin vain annetut solmut (`abc` ja `d-e`).
      */
     document.addEventListener(
       "data-paivitetty",
       function (e) {
-        if (document)
+        if (! document)
+          return;
+        else if (Array.isArray(e.detail)) {
+          for (let _solmu of e.detail)
+            for (let el of solmu.sisemmatSolmut(
+              document,
+              `[data-solmu|=${_solmu}]`,
+            ))
+              this.paivitaElementti(el);
+        }
+        else
           this.paivitaElementti(document);
       }.bind(this),
       false
