@@ -77,6 +77,15 @@
       }.bind(this),
       false
     );
+
+    /*
+     * Lisää kullekin DOM-elementille metodi `paivitaSolmu`.
+     */
+    Object.assign(Element.prototype, {
+      paivitaSolmu: function () {
+        solmu.paivitaElementti(this.closest("[data-solmu]"));
+      }
+    });
   }
 
   // Aja ennen dokumentin sulkemista?
