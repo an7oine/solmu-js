@@ -391,7 +391,15 @@
      * asetetaan alkuperäisen elementin solmu + rivin indeksi.
      */
     rivitetty: function (el, arvo) {
-      let riviaihio = solmu.sisemmatSolmut(el, ".riviaihio")[0];
+      let riviaihio = (
+        solmu.sisemmatSolmut(
+          el, ".riviaihio"
+        )[0] ?? solmu.sisemmatSolmut(
+          el, "template"
+        )[0]?.content?.querySelector?.(
+          ".riviaihio"
+        )
+      );
       if (! riviaihio) {
         console.log(`${el.dataset.solmu}: riviaihiota ei löydy.`);
         return;
@@ -405,8 +413,6 @@
         .filter(function (rivi) { return rivi.classList.contains("rivi"); })
         .map(function (rivi) { return [rivi.dataset.solmu, rivi]; })
       );
-
-      let viimeisinLisattyRivi = riviaihio;
 
       // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
       // sen kautta.
@@ -445,8 +451,7 @@
           // siirrä se viimeiseksi.
           solmu.paivitaElementti(olemassaolevaRiviEl);
           delete olemassaolevatRivit[rivisolmu];
-          viimeisinLisattyRivi.insertAdjacentElement("afterend", olemassaolevaRiviEl);
-          viimeisinLisattyRivi = olemassaolevaRiviEl;
+          el.insertAdjacentElement("beforeend", olemassaolevaRiviEl);
         }
         else {
           // Luo uusi rivielementti, lisää se viimeiseksi.
@@ -454,8 +459,7 @@
           riviEl.classList.remove("riviaihio");
           riviEl.classList.add("rivi");
           riviEl.setAttribute("data-solmu", rivisolmu);
-          viimeisinLisattyRivi.insertAdjacentElement("afterend", riviEl);
-          viimeisinLisattyRivi = riviEl;
+          el.insertAdjacentElement("beforeend", riviEl);
         }
       }
       for (let poistuvaRivi of Object.values(olemassaolevatRivit)) {
