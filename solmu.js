@@ -407,8 +407,6 @@
       );
 
       let viimeisinLisattyRivi = riviaihio;
-      if (! Array.isArray(arvo))
-        arvo = Object.values(arvo ?? {});
 
       // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
       // sen kautta.
@@ -417,12 +415,12 @@
 
       let rivisolmut = [];
 
-      for (let rivi of Array.isArray(arvo)? arvo : Object.values(arvo ?? {})) {
+      for (let [avain, rivi] of Object.entries(arvo ?? {})) {
         if (! rivi) {
           console.log(`${el.dataset.solmu}: rivi puuttuu.`);
           continue;
         }
-        let rivisolmu = [el.dataset.solmu, rivi.id].join("-");
+        let rivisolmu = [el.dataset.solmu, avain].join("-");
         if (vierasavain) {
           rivisolmu = [vierasavain, rivi.id].join("-");
           rivi = window.solmu.poimiData(rivisolmu);
