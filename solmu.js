@@ -235,6 +235,8 @@
      * - `suhteellinen` silloin, kun kyse on isäntäelementistä;
      * - `sisalto` muuten.
      *
+     * Mikäli [data-solmu-esitys] on tyhjä merkkijono, poistutaan.
+     *
      * Kutsutaan lopuksi `sisalto`-esitysfunktiota, ellei se sisälly
      * elementille määritettyyn esitykseen ja:
      * - elementillä on [data-solmu-sisalto] tai
@@ -244,7 +246,9 @@
     esitaData: function (el, data) {
       let arvo = data;
       let esitykset;
-      if (el.dataset.solmuEsitys)
+      if (el.dataset.solmuEsitys === "")
+        return;
+      else if (el.dataset.solmuEsitys)
         esitykset = el.dataset.solmuEsitys.split(", ");
       else if (el.childElementCount)
         esitykset = ["suhteellinen"];
