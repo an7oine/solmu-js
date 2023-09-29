@@ -416,6 +416,9 @@
         .filter(function (rivi) { return rivi.classList.contains("rivi"); })
         .map(function (rivi) { return [rivi.dataset.solmu, rivi]; })
       );
+      let sijoitusElementinJalkeen = Object.values(
+        olemassaolevatRivit
+      ).slice(-1).pop();
 
       // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
       // sen kautta.
@@ -448,22 +451,27 @@
         }
         rivisolmut.push(rivisolmu);
 
-        let olemassaolevaRiviEl = olemassaolevatRivit[rivisolmu];
-        if (olemassaolevaRiviEl !== undefined) {
+        let riviEl = olemassaolevatRivit[rivisolmu];
+        if (riviEl !== undefined) {
           // Päivitä olemassaoleva rivielementti;
           // siirrä se viimeiseksi.
-          solmu.paivitaElementti(olemassaolevaRiviEl);
+          solmu.paivitaElementti(riviEl);
           delete olemassaolevatRivit[rivisolmu];
-          el.insertAdjacentElement("beforeend", olemassaolevaRiviEl);
         }
         else {
           // Luo uusi rivielementti, lisää se viimeiseksi.
-          let riviEl = riviaihio.cloneNode(true);
+          riviEl = riviaihio.cloneNode(true);
           riviEl.classList.remove("riviaihio");
           riviEl.classList.add("rivi");
           riviEl.setAttribute("data-solmu", rivisolmu);
-          el.insertAdjacentElement("beforeend", riviEl);
         }
+        if (sijoitusElementinJalkeen)
+          sijoitusElementinJalkeen.insertAdjacentElement(
+            "afterend", riviEl
+          );
+        else
+          el.insertAdjacentElement("afterbegin", riviEl);
+        sijoitusElementinJalkeen = riviEl;
       }
       for (let poistuvaRivi of Object.values(olemassaolevatRivit)) {
         // Poista aiempi rivielementti.
