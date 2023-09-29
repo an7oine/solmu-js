@@ -379,9 +379,12 @@
       if (sisalto.startsWith("on"))
         el.setAttribute(sisalto, arvo)
       else if (sisalto) {
-        if (sisalto !== "valueAsDate")
-          arvo = arvo ?? "";
-        el[sisalto] = arvo;
+        if (sisalto === "valueAsDate" && ! arvo)
+          el.value = undefined;
+        else if (arvo === undefined)
+          el[sisalto] = "";
+        else
+          el[sisalto] = arvo;
       }
     },
 
