@@ -18,20 +18,62 @@
          *   [data-solmu*]-määreitä muutetaan.
          */
         this._muutostenTarkkailija = new MutationObserver(function (muutokset) {
-          for (const muutos of muutokset) {
+          let muuttuneetElementit = muutokset.flatMap(function (muutos) {
             if (muutos.type === 'childList') {
-              for (let solmu of muutos.addedNodes)
-                if (solmu.nodeType == Node.ELEMENT_NODE) {
-                  this.paivitaElementti(solmu);
+              return Array.from(muutos.addedNodes).filter(function (el) {
+                return el.nodeType == Node.ELEMENT_NODE;
+              }).flatMap(function (el) {
+                if (el.dataset.solmu)
+                  return [el];
+                let ulompiEl = el.closest("[data-solmu]");
+                if (! ulompiEl)
+                  return [];
+                if (el.dataset.suhteellinenSolmu !== undefined)
+                  // Suhteellinen solmu: päivitä ulompi.
+                  return [ulompiEl];
+                else if (this.sisemmatSolmut(
+                  el,
+                  "[data-suhteellinen-solmu]:not([data-solmu])",
+                  ":not([data-suhteellinen-solmu]):not([data-solmu])"
+                ).length > 0) {
+                  // Sisältää suhteellisia solmuja: päivitä ulompi.
+                  return [ulompiEl];
                 }
+                else
+                  // Päivitetään mahdolliset sisemmät, absoluuttiset solmut.
+                  return Array.from(this.sisemmatSolmut(el));
+              }.bind(this));
             }
-            else if (muutos.type === 'attributes') {
-              if (
+            else if (
+              muutos.type === 'attributes'
+              // Absoluuttinen solmu; suhteellinen polku tai
+              // esitysmuodon lisätiedot muuttuvat: päivitetään.
+              && muutos.target.matches("[data-solmu]")
+              && (
                 muutos.attributeName.startsWith("data-solmu")
-                && muutos.target.matches("[data-solmu]")
-              ) {
-                this._paivitaElementti(muutos.target);
-              }
+                || muutos.attributeName === "data-suhteellinen-solmu"
+              )
+            )
+              return [muutos.target];
+            else
+              return [];
+          }.bind(this));
+
+          // Järjestetään päivittyneet elementit: uloimmat ensin.
+          muuttuneetElementit = Array.from(new Set(muuttuneetElementit));
+          muuttuneetElementit.sort(function (el1, el2) {
+            return el1.contains(el2)? -1 : el2.contains(el1)? 1 : 0;
+          });
+
+          // Päivitetään ne elementit, jotka eivät ole luettelossa
+          // aiempien, ulompien elementtien sisällä.
+          let elt = [];
+          for (const el of muuttuneetElementit) {
+            if (elt.filter(function (el0) {
+              return el0?.contains(el);
+            }).length == 0) {
+              elt.push(el);
+              this._paivitaElementti(el);
             }
           }
         }.bind(this));
