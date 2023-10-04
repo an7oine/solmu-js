@@ -428,6 +428,7 @@
         else
           el[sisalto] = arvo;
       }
+      return arvo;
     },
 
     /*
