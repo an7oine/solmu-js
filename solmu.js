@@ -418,7 +418,7 @@
         else
           sisalto = "textContent";
       }
-      if (sisalto.startsWith("on"))
+      if (sisalto.startsWith("on") || sisalto.startsWith("data-"))
         el.setAttribute(sisalto, arvo)
       else if (sisalto) {
         if (sisalto === "valueAsDate" && ! arvo)
