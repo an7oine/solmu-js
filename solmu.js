@@ -576,6 +576,14 @@
       else
         solmu = [];
 
+      // Mikäli ulommalle elementille on määritetty
+      // [data-solmu-suhteellinen-viittaus], huomioidaan tämä.
+      if (el.dataset.solmuSuhteellinenViittaus)
+        solmu = window.solmu.yhdistettySolmu(
+          solmu,
+          el.dataset.solmuSuhteellinenViittaus
+        );
+
       // Mikäli vierasavain on määritetty, haetaan suhteellinen data
       // sen kautta.
       // Vierasavaimen viittaman datan on oltava sanakirjamuotoista.
