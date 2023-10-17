@@ -3,6 +3,15 @@
 (function () {
 
   function Solmu() {
+
+    this._debug = [
+      //"_paivitaElementti",
+      //"vierasavain",
+      //"puuttuvaRivi",
+      //"puuttuvaViittaus",
+      //"tuplarivi",
+    ];
+
     /*
      * Odota, kunnes sivu on latautunut.
      */
@@ -402,6 +411,8 @@
      * sijoitetaan siihen.
      */
     _paivitaElementti: function (el) {
+      if (this._debug.includes("_paivitaElementti"))
+        console.log(`Päivitetään ${el.dataset.solmu}`, el);
       this.esitaData(
         el,
         this.poimiData(el.dataset.solmu)
@@ -468,6 +479,9 @@
      * asetetaan alkuperäisen elementin solmu + rivin indeksi.
      */
     rivitetty: function (el, arvo) {
+      if (arvo === undefined) {
+        return arvo;
+      }
       let riviaihio = (
         solmu.sisemmatSolmut(
           el, ".riviaihio"
@@ -479,12 +493,8 @@
       );
       if (! riviaihio) {
         console.log(`${el.dataset.solmu}: riviaihiota ei löydy.`);
-        return;
+        return arvo;
       };
-      if (arvo === undefined) {
-        console.log(`${el.dataset.solmu}: arvo puuttuu.`);
-        return;
-      }
       let olemassaolevatRivit = Object.fromEntries(
         Array.from(el.children)
         .filter(function (rivi) { return rivi.classList.contains("rivi"); })
@@ -503,7 +513,8 @@
 
       for (let [avain, rivi] of Object.entries(arvo ?? {})) {
         if (! rivi) {
-          console.log(`${el.dataset.solmu}: rivi puuttuu.`);
+          if (this._debug.includes("puuttuvaRivi"))
+            console.log(`${el.dataset.solmu}: rivi puuttuu.`);
           continue;
         }
         let rivisolmu = [el.dataset.solmu, avain].join("-");
@@ -511,7 +522,8 @@
           rivisolmu = [vierasavain, rivi.id].join("-");
           rivi = window.solmu.poimiData(rivisolmu);
           if (! rivi) {
-            console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
+            if (this._debug.includes("puuttuvaViittaus"))
+              console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
             continue;
           }
         }
@@ -520,7 +532,8 @@
           continue;
 
         if (rivisolmut.includes(rivisolmu)) {
-          console.log(`Rivi ${rivisolmu} on kahdesti aineistossa!`);
+          if (this._debug.includes("tuplarivi"))
+            console.log(`Rivi ${rivisolmu} on kahdesti aineistossa!`);
           continue;
         }
         rivisolmut.push(rivisolmu);
