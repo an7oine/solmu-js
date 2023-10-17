@@ -178,6 +178,37 @@
     },
 
     /*
+     * Liitä suhteellinen solmu s2 (merkkijono) ulompaan,
+     * absoluuttiseen solmuun s1 (luettelo).
+     *
+     * Palauta tulos luettelomuodossa.
+     */
+    yhdistettySolmu: function (s1, s2) {
+      if (s2) {
+        let tulos = Array.from(s1);
+        // Kuoritaan ulomman elementin viittaamia,
+        // sisimpiä solmuja tarvittaessa pois, yksi
+        // kutakin alkavaa "-"-merkkiä kohti.
+        while (s2.startsWith("-")) {
+          if (! tulos.length)
+            // Huomaa, että mikäli `---...` viittaa ulomman solmun
+            // ulkopuolelle, sisemmälle elementille tulee `-`-alkuinen solmu.
+            break;
+          tulos.pop();
+          s2 = s2.substring(1);
+        }
+        // Lisätään sisemmän elementin viittama suhteellinen
+        // polku tuloksena saatuun solmuun.
+        if (s2)
+          return tulos.concat(s2.split("-"));
+        else
+          return tulos;
+      }
+      else
+        return s1;
+    },
+
+    /*
      * Hae tietoa annetusta datasta (oletus `document.data`) annetulla
      * avaimella.
      *
@@ -567,31 +598,13 @@
           "[data-suhteellinen-solmu]",
           ":not([data-suhteellinen-solmu]):not([data-solmu])"
         )) {
-          let suhteellinenSolmu = jalkelainen.dataset.suhteellinenSolmu;
-          if (suhteellinenSolmu) {
-            let _solmu = Array.from(solmu);
-            // Kuoritaan ulomman elementin viittaamia,
-            // sisimpiä solmuja tarvittaessa pois, yksi
-            // kutakin alkavaa "-"-merkkiä kohti.
-            while (suhteellinenSolmu.startsWith("-")) {
-              if (! _solmu.length)
-                // Huomaa, että mikäli `---...` viittaa ulomman solmun
-                // ulkopuolelle, sisemmälle elementille tulee `-`-alkuinen solmu.
-                break;
-              _solmu.pop();
-              suhteellinenSolmu = suhteellinenSolmu.substring(1);
-            }
-            // Lisätään sisemmän elementin viittama suhteellinen
-            // polku tuloksena saatuun solmuun.
-            if (suhteellinenSolmu)
-              _solmu = _solmu.concat(suhteellinenSolmu.split("-"));
-            // Asetetaan tuloksena saatu solmu sisempään.
-            jalkelainen.setAttribute("data-solmu", _solmu.join("-"));
-          }
-          else
-            // Mikäli [data-suhteellinen-solmu=""],
-            // asetetaan ulomman elementin solmu sellaisenaan.
-            jalkelainen.setAttribute("data-solmu", solmu.join("-"));
+          jalkelainen.setAttribute(
+            "data-solmu",
+            window.solmu.yhdistettySolmu(
+              solmu,
+              jalkelainen.dataset.suhteellinenSolmu
+            ).join("-")
+          );
         }
       }
 
