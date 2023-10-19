@@ -12,6 +12,8 @@
       //"tuplarivi",
     ];
 
+    this._ohitaPaivitys = [];
+
     /*
      * Odota, kunnes sivu on latautunut.
      */
@@ -261,12 +263,13 @@
      * Tavuviiva tulkitaan sisemmän sanakirjan
      * (joka luodaan tarvittaessa) avaimeksi,
      * so. `sanakirja-avain` = 42 tuottaa tuloksena:
+     * {sanakirja: {avain: 42}}
      *
      * Avaimen osana [] viittaa uuteen alkioon ulommassa taulukossa,
      * joka luodaan tarvittaessa. Huomaa, että kukin ajo samalla
      * avaimella luo oman, uuden alkionsa samaan taulukkoon.
-     *
-     * {sanakirja: {avain: 42}}
+     * Esim. `sanakirjat-[]-avain` = 42 tuottaa:
+     * {sanakirjat: [{avain: 42}]}
      */
     asetaData: function (avain, arvo, data) {
       data = data ?? document.data;
@@ -411,6 +414,10 @@
      * sijoitetaan siihen.
      */
     _paivitaElementti: function (el) {
+      if (this._ohitaPaivitys.includes(el)) {
+        this._ohitaPaivitys.pop(el);
+        return;
+      }
       if (this._debug.includes("_paivitaElementti"))
         console.log(`Päivitetään ${el.dataset.solmu}`, el);
       this.esitaData(
@@ -428,6 +435,10 @@
       for (let jalkelainen of this.sisemmatSolmut(el))
         this._paivitaElementti(jalkelainen);
     },
+
+    ohitaPaivitys: function (el) {
+      this._ohitaPaivitys.push(el);
+    }
   });
 
   /*
