@@ -415,7 +415,9 @@
      */
     _paivitaElementti: function (el) {
       if (this._ohitaPaivitys.includes(el)) {
-        this._ohitaPaivitys.pop(el);
+        setTimeout(function () {
+          this._ohitaPaivitys.pop(el);
+        }.bind(this), 0);
         return;
       }
       if (this._debug.includes("_paivitaElementti"))
@@ -473,6 +475,12 @@
       }
       if (sisalto.startsWith("on") || sisalto.startsWith("data-"))
         el.setAttribute(sisalto, arvo)
+      else if (el.matches("select[multiple]") && sisalto === "value")
+        for (let option of el.querySelectorAll("option"))
+          if (arvo?.includes?.(option.value))
+            option.setAttribute("selected", true);
+          else
+            option.removeAttribute("selected");
       else if (sisalto) {
         if (sisalto === "valueAsDate" && ! arvo)
           el.value = undefined;
@@ -581,6 +589,9 @@
     /*
      * Suhteellinen, ulomman solmun viittauksesta riippuva sisältö.
      *
+     * Mikäli [data-solmu-suhteellinen-viittaus] on määritelty,
+     * käytetään tätä suhteellisena viittauksena ULOMPAAN solmuun.
+     *
      * Mikäli elementin solmu alkaa "-", ohitetaan.
      *
      * Elementin sisältämät [data-suhteellinen-solmu]-jälkeläiset käydään
@@ -593,6 +604,10 @@
      */
     suhteellinen: function (el, arvo) {
       let solmu = el.dataset.solmu;
+      if (el.dataset.solmuSuhteellinenViittaus !== undefined)
+        solmu = el.parentElement.closest(
+          "[data-solmu]"
+        ).dataset.solmu;
       if (solmu.startsWith("-"))
         solmu = undefined;
       else if (solmu)
@@ -600,7 +615,7 @@
       else
         solmu = [];
 
-      // Mikäli ulommalle elementille on määritetty
+      // Mikäli käsillä olevalle elementille on määritetty
       // [data-solmu-suhteellinen-viittaus], huomioidaan tämä.
       if (el.dataset.solmuSuhteellinenViittaus)
         solmu = window.solmu.yhdistettySolmu(
