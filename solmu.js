@@ -152,7 +152,7 @@
      */
     ElementinSisalto: [
       ["input[type=date], input[type=time]", "valueAsDate"],
-      ["input, select, option", "value"],
+      ["input, select, textarea, option", "value"],
     ],
     ElementinTulkinta: [
       ["input[type=checkbox]", "rastiRuudussa"],
