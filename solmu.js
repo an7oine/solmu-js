@@ -502,9 +502,9 @@
         return arvo;
       }
       let riviaihio = (
-        solmu.sisemmatSolmut(
+        window.solmu.sisemmatSolmut(
           el, ".riviaihio"
-        )[0] ?? solmu.sisemmatSolmut(
+        )[0] ?? window.solmu.sisemmatSolmut(
           el, "template"
         )[0]?.content?.querySelector?.(
           ".riviaihio"
@@ -521,9 +521,9 @@
       );
       let sijoitusElementinJalkeen = Object.values(
         olemassaolevatRivit
-      ).slice(-1).pop() ?? solmu.sisemmatSolmut(
+      ).slice(-1).pop() ?? window.solmu.sisemmatSolmut(
         el, ".riviaihio"
-      )[0] ?? solmu.sisemmatSolmut(
+      )[0] ?? window.solmu.sisemmatSolmut(
         el, "template"
       )[0];
 
@@ -536,7 +536,7 @@
 
       for (let [avain, rivi] of Object.entries(arvo ?? {})) {
         if (rivi == undefined) {
-          if (this._debug.includes("puuttuvaRivi"))
+          if (window.solmu._debug.includes("puuttuvaRivi"))
             console.log(`${el.dataset.solmu}: rivi puuttuu.`);
           continue;
         }
@@ -545,7 +545,7 @@
           rivisolmu = [vierasavain, rivi.id].join("-");
           rivi = window.solmu.poimiData(rivisolmu);
           if (! rivi) {
-            if (this._debug.includes("puuttuvaViittaus"))
+            if (window.solmu._debug.includes("puuttuvaViittaus"))
               console.log(`${el.dataset.solmu}: viitattua tietuetta ${arvo} ei löydy.`);
             continue;
           }
@@ -555,7 +555,7 @@
           continue;
 
         if (rivisolmut.includes(rivisolmu)) {
-          if (this._debug.includes("tuplarivi"))
+          if (window.solmu._debug.includes("tuplarivi"))
             console.log(`Rivi ${rivisolmu} on kahdesti aineistossa!`);
           continue;
         }
@@ -565,7 +565,7 @@
         if (riviEl !== undefined) {
           // Päivitä olemassaoleva rivielementti;
           // siirrä se viimeiseksi.
-          solmu.paivitaElementti(riviEl);
+          window.solmu.paivitaElementti(riviEl);
           delete olemassaolevatRivit[rivisolmu];
         }
         else {
