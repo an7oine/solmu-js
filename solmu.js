@@ -521,7 +521,11 @@
       );
       let sijoitusElementinJalkeen = Object.values(
         olemassaolevatRivit
-      ).slice(-1).pop();
+      ).slice(-1).pop() ?? solmu.sisemmatSolmut(
+        el, ".riviaihio"
+      )[0] ?? solmu.sisemmatSolmut(
+        el, "template"
+      )[0];
 
       // Mikäli vierasavain on määritetty, haetaan kukin rivisolmu
       // sen kautta.
@@ -531,7 +535,7 @@
       let rivisolmut = [];
 
       for (let [avain, rivi] of Object.entries(arvo ?? {})) {
-        if (! rivi) {
+        if (rivi == undefined) {
           if (this._debug.includes("puuttuvaRivi"))
             console.log(`${el.dataset.solmu}: rivi puuttuu.`);
           continue;
