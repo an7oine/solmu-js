@@ -151,7 +151,6 @@
      * Oletuksena käytetään määrettä `innerHTML`.
      */
     ElementinSisalto: [
-      ["input[type=date], input[type=time]", "valueAsDate"],
       ["input, select, textarea, option", "value"],
     ],
     ElementinTulkinta: [
@@ -481,14 +480,8 @@
             option.setAttribute("selected", true);
           else
             option.removeAttribute("selected");
-      else if (sisalto) {
-        if (sisalto === "valueAsDate" && ! arvo)
-          el.value = undefined;
-        else if (arvo === undefined)
-          el[sisalto] = "";
-        else
-          el[sisalto] = arvo;
-      }
+      else if (sisalto)
+        el[sisalto] = arvo ?? "";
       return arvo;
     },
 
