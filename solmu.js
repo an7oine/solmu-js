@@ -5,6 +5,7 @@
   function Solmu() {
 
     this._debug = [
+      //"dataPaivitetty",
       //"_paivitaElementti",
       //"vierasavain",
       //"puuttuvaRivi",
@@ -115,6 +116,8 @@
     document.addEventListener(
       "data-paivitetty",
       function (e) {
+        if (this._debug.includes("dataPaivitetty"))
+          console.log("dataPaivitetty", e.detail, document?.data);
         if (! document)
           return;
         else if (Array.isArray(e.detail)) {
