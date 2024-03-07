@@ -454,7 +454,13 @@
   Object.assign(Solmu.prototype.esitys, {
 
     /*
-     * Aseta elementin sisältö.
+     * Aseta elementin sisältö [data-solmu-sisalto]-määreen tai
+     * elementtityyppikohtaisen oletuksen mukaisesti.
+     *
+     * Poikkeukset:
+     * - [on*] ja [data-*]: asetetaan `setAttribute()`-metodin avulla;
+     * - select[multiple]: merkitään `option`-elementit valituiksi;
+     * - [valueAsDate], kun arvo on tyhjä: asetetaan tyhjä [value].
      */
     sisalto: function (el, arvo) {
       let sisalto = el.dataset.solmuSisalto;
@@ -483,6 +489,8 @@
             option.setAttribute("selected", true);
           else
             option.removeAttribute("selected");
+      else if (sisalto === "valueAsDate" && ! arvo)
+        el.value = arvo;
       else if (sisalto)
         el[sisalto] = arvo ?? "";
       return arvo;
