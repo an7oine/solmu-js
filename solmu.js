@@ -158,6 +158,8 @@
     ],
     ElementinTulkinta: [
       ["input[type=checkbox]", "rastiRuudussa"],
+      ["input[type=radio]", "radiovalinta"],
+      ["select[multiple]", "monivalinta"],
     ],
 
     /*
@@ -489,6 +491,8 @@
             option.setAttribute("selected", true);
           else
             option.removeAttribute("selected");
+      else if (el.matches("input[type=radio]") && sisalto === "value")
+        el.checked = (el.value == arvo);
       else if (sisalto === "valueAsDate" && ! arvo)
         el.value = arvo;
       else if (sisalto)
@@ -683,6 +687,29 @@
      */
     rastiRuudussa: function (el, arvo) {
       return el.checked;
+    },
+
+    /*
+     * Tulkitse `input[type=radio]`-tyyppinen syöte valitun nappulan arvona.
+     */
+    radiovalinta: function (el, arvo) {
+      return el?.checked? arvo : (
+        Array.from(
+          el?.form?.elements?.[el?.name] ?? []
+        ).filter(function (toinenEl) { return toinenEl?.checked; })[0]?.value
+      );
+    },
+
+    /*
+     * Tulkitse `select[multiple]`-elementin arvo kaikkien valittujen
+     * `option`-elementtien arvoina.
+     */
+    monivalinta: function (el, arvo) {
+      return Array.from(
+        el.selectedOptions
+      ).map(function (option) {
+        return option.value;
+      });
     }
   });
 
