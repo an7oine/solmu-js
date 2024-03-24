@@ -24,12 +24,30 @@
         /*
          * Kuuntele kaikkia DOM-muutoksia ja reagoi niihin seuraavasti:
          *
+         * - poistuneille [data-solmu]-elementeille lähetetään
+         *   `solmu-poistettu`-tapahtuma;
+         *
          * - uusien [data-solmu]-elementtien sisältö päivitetään heti;
          *
          * - olemassaolevat elementit päivitetään aina, kun niiden
          *   [data-solmu*]-määreitä muutetaan.
          */
         this._muutostenTarkkailija = new MutationObserver(function (muutokset) {
+          for (let muutos of muutokset)
+            if (muutos.type === 'childList')
+              for (let el of muutos.removedNodes)
+                if (el.nodeType == Node.ELEMENT_NODE) {
+                  for (let sisempiEl of this.sisemmatSolmut(
+                    el,
+                    "[data-solmu]",
+                    "*",
+                    true
+                  )) {
+                    sisempiEl.dispatchEvent(new Event("solmu-poistettu"));
+                  }
+                  if (el.dataset.solmu)
+                    el.dispatchEvent(new Event("solmu-poistettu"));
+                }
           let muuttuneetElementit = muutokset.flatMap(function (muutos) {
             if (muutos.type === 'childList') {
               return Array.from(muutos.addedNodes).filter(function (el) {
@@ -175,20 +193,33 @@
      * että haku pysähtyy kunkin löytyneen elementin kohdalla
      * (vain ne jälkeläiset tutkitaan, joihin ei-q-haku täsmää;
      * oletuksena nämä ovat samat, joihin q-haku ei täsmää).
+     *
+     * Mikäli `syvyysEnsin` on tosi, palautetaan järjestyksessä ensin
+     * syvimpänä hierarkiassa olevat solmut; oletuksena päinvastoin.
      */
-    sisemmatSolmut: function (el, q, ei_q) {
+    sisemmatSolmut: function (el, q, ei_q, syvyysEnsin) {
       q = q ?? "[data-solmu]";
       ei_q = ei_q ?? `:not(${q})`;
-      let tasmaavat = Array.from(el.querySelectorAll(
-        `:scope >${q}`
-      ));
+      let tasmaavat = [];
+      if (! syvyysEnsin)
+        tasmaavat = tasmaavat.concat(
+          Array.from(el.querySelectorAll(
+            `:scope >${q}`
+          ))
+        );
       for (let jalkelainen of el.querySelectorAll(
         `:scope >${ei_q}`
       )) {
         tasmaavat = tasmaavat.concat(
-          this.sisemmatSolmut(jalkelainen, q, ei_q)
+          this.sisemmatSolmut(jalkelainen, q, ei_q, syvyysEnsin)
         );
       }
+      if (syvyysEnsin)
+        tasmaavat = tasmaavat.concat(
+          Array.from(el.querySelectorAll(
+            `:scope >${q}`
+          ))
+        );
       return tasmaavat;
     },
 
