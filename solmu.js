@@ -167,11 +167,12 @@
 
   Object.assign(Solmu.prototype, {
     /*
-     * Sanakirja, joka koodaa elementtityypin (tagName) siihen
+     * Sanakirja, joka koodaa CSS-valitsimen siihen
      * määreeseen, joka käsittää elementin sisällön.
      * Oletuksena käytetään määrettä `innerHTML`.
      */
     ElementinSisalto: [
+      ["input[type=checkbox]", "checked"],
       ["input, select, textarea, option", "value"],
     ],
     ElementinTulkinta: [
