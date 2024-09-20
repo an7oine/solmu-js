@@ -468,6 +468,12 @@
      * Päivitä elementti ja sen lähimmät jälkeläiset.
      */
     paivitaElementti: function (el) {
+      if (this._ohitaPaivitys.includes(el)) {
+        setTimeout(function () {
+          this._ohitaPaivitys.pop(el);
+        }.bind(this), 0);
+        return;
+      }
       if (el.dataset?.solmu !== undefined)
         this._paivitaElementti(el);
       for (let jalkelainen of this.sisemmatSolmut(el))
