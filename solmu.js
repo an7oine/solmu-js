@@ -320,16 +320,6 @@
           (_edellinenData = data).push(data = {});
           _edellinenAvain = 0;
         }
-        else if (Array.isArray(data)) {
-          _edellinenData = data;
-          _edellinenAvain = _avain;
-          if (! isNaN(_avain))
-            data = data[_avain];
-          else
-            data = data.flatMap(function (alkio) {
-              return alkio? alkio[_avain] : undefined;
-            });
-        }
         else {
           _edellinenData = data;
           _edellinenAvain = _avain;
