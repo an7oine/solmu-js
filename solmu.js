@@ -513,6 +513,8 @@
       }
       if (sisalto.startsWith("on") || sisalto.startsWith("data-"))
         el.setAttribute(sisalto, arvo)
+      else if (sisalto.startsWith("--"))
+        el.style.setProperty(sisalto, arvo)
       else if (el.matches("select[multiple]") && sisalto === "value")
         for (let option of el.querySelectorAll("option"))
           if (arvo?.includes?.(option.value))
