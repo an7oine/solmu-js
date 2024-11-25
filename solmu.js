@@ -493,14 +493,14 @@
      * - [valueAsDate], kun arvo on tyhjä: asetetaan tyhjä [value].
      */
     sisalto: function (el, arvo) {
-      let sisalto = el.dataset.solmuSisalto;
-      if (sisalto === undefined) {
+      let sisallot = el.dataset.solmuSisalto;
+      if (sisallot === undefined) {
         for (const [tyyppi, _sisalto] of window.solmu.ElementinSisalto)
           if (el.matches(tyyppi)) {
-            sisalto = _sisalto;
+            sisallot = _sisalto;
             break;
           }
-        if (sisalto)
+        if (sisallot)
           ;
         else if (! [
           "string", "number", "undefined"
@@ -509,24 +509,26 @@
         else if (el.childElementCount)
           return;
         else
-          sisalto = "textContent";
+          sisallot = "textContent";
       }
-      if (sisalto.startsWith("on") || sisalto.startsWith("data-"))
-        el.setAttribute(sisalto, arvo)
-      else if (sisalto.startsWith("--"))
-        el.style.setProperty(sisalto, arvo)
-      else if (el.matches("select[multiple]") && sisalto === "value")
-        for (let option of el.querySelectorAll("option"))
-          if (arvo?.includes?.(option.value))
-            option.setAttribute("selected", true);
-          else
-            option.removeAttribute("selected");
-      else if (el.matches("input[type=radio]") && sisalto === "value")
-        el.checked = (el.value == arvo);
-      else if (sisalto === "valueAsDate" && ! arvo)
-        el.value = arvo;
-      else if (sisalto)
-        el[sisalto] = arvo ?? "";
+      for (let sisalto of sisallot.split(", ")) {
+        if (sisalto.startsWith("on") || sisalto.startsWith("data-"))
+          el.setAttribute(sisalto, arvo)
+        else if (sisalto.startsWith("--"))
+          el.style.setProperty(sisalto, arvo)
+        else if (el.matches("select[multiple]") && sisalto === "value")
+          for (let option of el.querySelectorAll("option"))
+            if (arvo?.includes?.(option.value))
+              option.setAttribute("selected", true);
+            else
+              option.removeAttribute("selected");
+        else if (el.matches("input[type=radio]") && sisalto === "value")
+          el.checked = (el.value == arvo);
+        else if (sisalto === "valueAsDate" && ! arvo)
+          el.value = arvo;
+        else if (sisalto)
+          el[sisalto] = arvo ?? "";
+      }
       return arvo;
     },
 
