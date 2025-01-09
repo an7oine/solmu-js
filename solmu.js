@@ -470,8 +470,22 @@
         this._paivitaElementti(jalkelainen);
     },
 
+    /*
+     * Ohita elementin päivitys seuraavalla piirtokerralla.
+     *
+     * Huomaa, että kahdesta sisäkkäisestä elementistä vain ulompi ohitetaan.
+     */
     ohitaPaivitys: function (el) {
-      this._ohitaPaivitys.push(el);
+      let lisataan = true;
+      this._ohitaPaivitys = this._ohitaPaivitys.flatMap(function (ohitaEl) {
+        if (el.contains(ohitaEl))
+          return [];
+        else if (ohitaEl.contains(el))
+          lisataan = false;
+        return [ohitaEl];
+      });
+      if (lisataan)
+        this._ohitaPaivitys.push(el);
     }
   });
 
