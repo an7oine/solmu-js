@@ -16,112 +16,20 @@
     this._ohitaPaivitys = [];
 
     /*
-     * Odota, kunnes sivu on latautunut.
+     * Aloita DOM-muutosten tarkkailu, kun dokumentti on latautunut;
+     * aikaisintaan seuraavalla piirrolla.
      */
-    window.addEventListener(
-      "DOMContentLoaded",
-      function (e) {
-        /*
-         * Kuuntele kaikkia DOM-muutoksia ja reagoi niihin seuraavasti:
-         *
-         * - poistuneille [data-solmu]-elementeille lähetetään
-         *   `solmu-poistettu`-tapahtuma;
-         *
-         * - uusien [data-solmu]-elementtien sisältö päivitetään heti;
-         *
-         * - olemassaolevat elementit päivitetään aina, kun niiden
-         *   [data-solmu*]-määreitä muutetaan.
-         */
-        this._muutostenTarkkailija = new MutationObserver(function (muutokset) {
-          for (let muutos of muutokset)
-            if (muutos.type === 'childList')
-              for (let el of muutos.removedNodes)
-                if (el.nodeType == Node.ELEMENT_NODE) {
-                  for (let sisempiEl of this.sisemmatSolmut(
-                    el,
-                    "[data-solmu]",
-                    "*",
-                    true
-                  )) {
-                    sisempiEl.dispatchEvent(new Event("solmu-poistettu"));
-                  }
-                  if (el.dataset.solmu)
-                    el.dispatchEvent(new Event("solmu-poistettu"));
-                }
-          let muuttuneetElementit = muutokset.flatMap(function (muutos) {
-            if (muutos.type === 'childList') {
-              return Array.from(muutos.addedNodes).filter(function (el) {
-                return el.nodeType == Node.ELEMENT_NODE;
-              }).flatMap(function (el) {
-                if (el.dataset.solmu)
-                  return [el];
-                let ulompiEl = el.closest("[data-solmu]");
-                if (! ulompiEl)
-                  return [];
-                if (el.dataset.suhteellinenSolmu !== undefined)
-                  // Suhteellinen solmu: päivitä ulompi.
-                  return [ulompiEl];
-                else if (this.sisemmatSolmut(
-                  el,
-                  "[data-suhteellinen-solmu]:not([data-solmu])",
-                  ":not([data-suhteellinen-solmu]):not([data-solmu])"
-                ).length > 0) {
-                  // Sisältää suhteellisia solmuja: päivitä ulompi.
-                  return [ulompiEl];
-                }
-                else
-                  // Päivitetään mahdolliset sisemmät, absoluuttiset solmut.
-                  return Array.from(this.sisemmatSolmut(el));
-              }.bind(this));
-            }
-            else if (
-              muutos.type === 'attributes'
-              // Absoluuttinen solmu; suhteellinen polku tai
-              // esitysmuodon lisätiedot muuttuvat: päivitetään.
-              && muutos.target.matches("[data-solmu]")
-              && (
-                muutos.attributeName.startsWith("data-solmu")
-                || muutos.attributeName === "data-suhteellinen-solmu"
-              )
-            )
-              return [muutos.target];
-            else
-              return [];
-          }.bind(this));
-
-          // Järjestetään päivittyneet elementit: uloimmat ensin.
-          muuttuneetElementit = Array.from(new Set(muuttuneetElementit));
-          muuttuneetElementit.sort(function (el1, el2) {
-            return el1.contains(el2)? -1 : el2.contains(el1)? 1 : 0;
-          });
-
-          // Päivitetään ne elementit, jotka eivät ole luettelossa
-          // aiempien, ulompien elementtien sisällä.
-          let elt = [];
-          for (const el of muuttuneetElementit) {
-            if (elt.filter(function (el0) {
-              return el0?.contains(el);
-            }).length == 0) {
-              elt.push(el);
-              this._paivitaElementti(el);
-            }
-          }
-        }.bind(this));
-        this._muutostenTarkkailija.observe(document, {
-          attributes: true,
-          childList: true,
-          subtree: true
-        });
-
-        /*
-         * Päivitä kaikki DOM:ssä jo olevat solmut.
-         */
-        for (let olemassaolevaSolmu of this.sisemmatSolmut(document)) {
-          this._paivitaElementti(olemassaolevaSolmu);
-        }
-      }.bind(this),
-      false
-    );
+    if (document.readyState === "loading")
+      window.addEventListener(
+        "DOMContentLoaded",
+        this.tarkkaileDOMMuutoksia.bind(this),
+        false
+      );
+    else
+      setTimeout(
+        this.tarkkaileDOMMuutoksia.bind(this),
+        0
+      );
 
     /*
      * Päivitä kaikki solmut aina, kun dokumentti vastaanottaa
@@ -162,9 +70,6 @@
     });
   }
 
-  // Aja ennen dokumentin sulkemista?
-  //this._muutostenTarkkailija.disconnect();
-
   Object.assign(Solmu.prototype, {
     /*
      * Sanakirja, joka koodaa CSS-valitsimen siihen
@@ -187,6 +92,111 @@
     esitys: {},
     tulkinta: {},
     suodatus: {},
+
+    /*
+     * Kuuntele kaikkia DOM-muutoksia ja reagoi niihin seuraavasti:
+     *
+     * - poistuneille [data-solmu]-elementeille lähetetään
+     *   `solmu-poistettu`-tapahtuma;
+     *
+     * - uusien [data-solmu]-elementtien sisältö päivitetään heti;
+     *
+     * - olemassaolevat elementit päivitetään aina, kun niiden
+     *   [data-solmu*]-määreitä muutetaan.
+     */
+    tarkkaileDOMMuutoksia: function () {
+      let muutostenTarkkailija = new MutationObserver(function (muutokset) {
+        for (let muutos of muutokset)
+          if (muutos.type === 'childList')
+            for (let el of muutos.removedNodes)
+              if (el.nodeType == Node.ELEMENT_NODE) {
+                for (let sisempiEl of this.sisemmatSolmut(
+                  el,
+                  "[data-solmu]",
+                  "*",
+                  true
+                )) {
+                  sisempiEl.dispatchEvent(new Event("solmu-poistettu"));
+                }
+                if (el.dataset.solmu)
+                  el.dispatchEvent(new Event("solmu-poistettu"));
+              }
+        let muuttuneetElementit = muutokset.flatMap(function (muutos) {
+          if (muutos.type === 'childList') {
+            return Array.from(muutos.addedNodes).filter(function (el) {
+              return el.nodeType == Node.ELEMENT_NODE;
+            }).flatMap(function (el) {
+              if (el.dataset.solmu)
+                return [el];
+              let ulompiEl = el.closest("[data-solmu]");
+              if (! ulompiEl)
+                return [];
+              if (el.dataset.suhteellinenSolmu !== undefined)
+                // Suhteellinen solmu: päivitä ulompi.
+                return [ulompiEl];
+              else if (this.sisemmatSolmut(
+                el,
+                "[data-suhteellinen-solmu]:not([data-solmu])",
+                ":not([data-suhteellinen-solmu]):not([data-solmu])"
+              ).length > 0) {
+                // Sisältää suhteellisia solmuja: päivitä ulompi.
+                return [ulompiEl];
+              }
+              else
+                // Päivitetään mahdolliset sisemmät, absoluuttiset solmut.
+                return Array.from(this.sisemmatSolmut(el));
+            }.bind(this));
+          }
+          else if (
+            muutos.type === 'attributes'
+            // Absoluuttinen solmu; suhteellinen polku tai
+            // esitysmuodon lisätiedot muuttuvat: päivitetään.
+            && muutos.target.matches("[data-solmu]")
+            && (
+              muutos.attributeName.startsWith("data-solmu")
+              || muutos.attributeName === "data-suhteellinen-solmu"
+            )
+          )
+            return [muutos.target];
+          else
+            return [];
+        }.bind(this));
+
+        // Järjestetään päivittyneet elementit: uloimmat ensin.
+        muuttuneetElementit = Array.from(new Set(muuttuneetElementit));
+        muuttuneetElementit.sort(function (el1, el2) {
+          return el1.contains(el2)? -1 : el2.contains(el1)? 1 : 0;
+        });
+
+        // Päivitetään ne elementit, jotka eivät ole luettelossa
+        // aiempien, ulompien elementtien sisällä.
+        let elt = [];
+        for (const el of muuttuneetElementit) {
+          if (elt.filter(function (el0) {
+            return el0?.contains(el);
+          }).length == 0) {
+            elt.push(el);
+            this._paivitaElementti(el);
+          }
+        }
+      }.bind(this));
+
+      muutostenTarkkailija.observe(document, {
+        attributes: true,
+        childList: true,
+        subtree: true
+      });
+
+      /*
+       * Päivitä kaikki DOM:ssä jo olevat solmut.
+       */
+      for (let olemassaolevaSolmu of this.sisemmatSolmut(document)) {
+        this._paivitaElementti(olemassaolevaSolmu);
+      }
+
+      // Aja ennen dokumentin sulkemista?
+      //muutostenTarkkailija.disconnect();
+    },
 
     /*
      * Poimi elementin sisältämät, hakuun (oletuksena [data-solmu])
@@ -760,5 +770,4 @@
   });
 
   window.solmu = new Solmu();
-
 })();
