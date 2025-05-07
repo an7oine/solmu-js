@@ -370,7 +370,11 @@
       if (el.dataset.solmuEsitys === "")
         return;
       else if (el.dataset.solmuEsitys)
-        esitykset = el.dataset.solmuEsitys.split(", ");
+        esitykset = el.dataset.solmuEsitys.split(",").flatMap(
+          function (esitys) {
+            return (esitys = esitys.trim())? [esitys] : [];
+          }
+        );
       else if (el.childElementCount)
         esitykset = ["suhteellinen"];
       else
